@@ -3,6 +3,7 @@ import torch
 from PIL import ImageGrab
 import numpy as np
 from model import CnnEmotions
+from mss import mss
 
 
 dict_indexes = {0: 'Angry', 1: 'Disgust', 2: 'Fear', 3: 'Happy', 4: 'Sad', 5: 'Surprise', 6: 'Neutral'}
@@ -44,8 +45,8 @@ def get_faces(image):
         minNeighbors=5,
         minSize=(10, 10)
     )
-    return sorted(faces, key=lambda x: get_square_of_image(x), reverse=True)
-
+    # return sorted(faces, key=lambda x: get_square_of_image(x), reverse=True)
+    return faces
 
 def to_grey(image):
     """
@@ -78,7 +79,7 @@ def get_square_of_image(params):
     return params[2] * params[3]
 
 
-def create_borders(image, color, size=8):
+def create_borders(image, color, size=20):
     """
     Делает рамку вокруг каждого лица
     :param image: Входное np.array изображение
@@ -106,14 +107,14 @@ def collect_faces_to_image(image, faces, texts):
     i = 0
     color = dict(zip(dict_indexes.values(), dict_indexes.keys()))
     for (x, y, _w, _h) in faces:
-        new_face = scale(image[y:y + _h, x:x + _w], 80)
+        new_face = scale(image[y:y + _h, x:x + _w], 100)
         new_face = create_borders(new_face, dict_colors[color[texts[i]]])
         res.append(new_face)
         i += 1
     if res:
         return np.concatenate(res)
     else:
-        return np.zeros((80, 80, 3))
+        return np.zeros((100, 100, 3))
 
 
 def detect_face_and_draw_rectangle(image, faces, texts=None):
@@ -177,8 +178,20 @@ def image_grabber():
     Запись экрана
     :return: Кадр с экрана np.array
     """
-    return np.array(ImageGrab.grab(bbox=(0, 0, w, h)))[:, :, [2, 1, 0]]
+    img = np.array(ImageGrab.grab(bbox=(0, 0, w, h)))[:, :, [2, 1, 0]]
+    return cv2.resize(img, (img.shape[1]//4, img.shape[0]//4), interpolation=cv2.INTER_AREA)
 
+
+def capture_screenshot():
+    """
+    Запись экрана c большей частотой кадров
+    :return: Кадр с экрана np.array
+    """
+    with mss() as sct:
+        monitor = {'left': 0, 'top': 0, 'width': sct.monitors[1]['width']//2, 'height': sct.monitors[1]['height']}
+        sct_img = sct.grab(monitor)
+        img = np.array(sct_img)[:, :, [0, 1, 2]]
+        return cv2.resize(img, (img.shape[1] // 4, img.shape[0] // 4), interpolation=cv2.INTER_AREA)
 
 # def frontCamera():
 #     """
@@ -188,7 +201,7 @@ def image_grabber():
 #     return vid.read()[-1]
 
 # вызов основной функции
-show_face_with_nn(image_grabber, em, collect_faces_to_image)
+show_face_with_nn(capture_screenshot, em, collect_faces_to_image)
 
 # vid = cv2.VideoCapture(0)
 # show_face_with_nn(frontCamera, em, collect_faces_to_image)
