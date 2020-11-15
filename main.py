@@ -95,20 +95,29 @@ def create_borders(image, color, size=20):
     return blank_image
 
 
-def collect_faces_to_image(image, faces, texts):
+def collect_faces_to_image(image, faces, texts, scalemod=100):
     """
     Делает итоговую картинку для вывода на экран
     :param image: Входное np.array изображение
     :param faces: (x, y, w, h) всех лиц на изображении
     :param texts: Классы лиц по эмоциям
+    :param scalemod: Размер изображения лица до рамки
     :return: Изображение размерв (n_faces*face_high, face_width, 3)
     """
     res = []
     i = 0
     color = dict(zip(dict_indexes.values(), dict_indexes.keys()))
     for (x, y, _w, _h) in faces:
-        new_face = scale(image[y:y + _h, x:x + _w], 100)
-        new_face = create_borders(new_face, dict_colors[color[texts[i]]])
+        new_face = scale(image[y:y + _h, x:x + _w], scalemod)
+        org = (0+1, scalemod-1)
+        color_t = dict_colors[color[texts[i]]]
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        fontscale = 0.5
+        thickness = 2
+        new_face = cv2.putText(new_face, texts[i], org, font,
+                            fontscale, color_t[::-1], thickness, cv2.LINE_AA)
+        new_face = create_borders(new_face, color_t)
+
         res.append(new_face)
         i += 1
     if res:
