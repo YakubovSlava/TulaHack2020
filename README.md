@@ -6,3 +6,4 @@ After you need run "main.py".
 ### REMEMBER
 all faces that you want program to see have to be located on the left part of the screen. The result window should be located in the right part.
 #### It is recomended work with small number of faces.
+#### if you want to recrete the training, run cell by cell in training.ipynb
