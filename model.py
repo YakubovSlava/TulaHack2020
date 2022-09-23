@@ -4,7 +4,7 @@ import torch.nn as nn
 
 class CnnEmotions(torch.nn.Module):
     """
-    Изменил комментарий к классу
+    Изменил комментарий к классу (Исправляю для теста еще раз)
     """
     def __init__(self):
         """
