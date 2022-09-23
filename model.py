@@ -4,7 +4,7 @@ import torch.nn as nn
 
 class CnnEmotions(torch.nn.Module):
     """
-    Изменил комментарий к классу (Исправляю для теста еще раз)
+    Нейронная сеть
     """
     def __init__(self):
         """
